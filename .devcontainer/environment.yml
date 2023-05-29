@@ -1,0 +1,7 @@
+name: env_label
+channels:
+  - conda-forge
+dependencies:
+  - ipykernel
+  - pystac
+  - python=3.10

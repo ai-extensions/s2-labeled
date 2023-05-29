@@ -1,0 +1,15 @@
+{
+	"name": "label",
+
+	"build": {
+		"context": "..",
+		"dockerfile": "./Dockerfile"},
+	"settings": {
+		"python.pythonPath": "/opt/conda/envs/env_label/bin/python"},
+	"extensions": [
+		"ms-python.python"
+	],
+	"remoteEnv": {
+		"PATH": "${containerEnv:PATH}:/opt/conda/envs/env_label/bin"},
+	"mounts": []
+}

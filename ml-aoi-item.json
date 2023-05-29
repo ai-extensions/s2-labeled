@@ -1,0 +1,68 @@
+{
+  "type": "Feature",
+  "stac_version": "1.0.0",
+  "id": "ml-aoi",
+  "properties": {
+    "ml-aoi:split": "train",
+    "datetime": "2023-05-29T10:11:04.509948Z"
+  },
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [
+          -120.55525350359474,
+          39.63588071728383
+        ],
+        [
+          -121.8343226741975,
+          39.65576614375439
+        ],
+        [
+          -121.81728871175561,
+          40.64479052153662
+        ],
+        [
+          -120.51956282559038,
+          40.624201162169484
+        ],
+        [
+          -120.55525350359474,
+          39.63588071728383
+        ]
+      ]
+    ]
+  },
+  "links": [
+    {
+      "rel": "derived_from",
+      "href": "https://earth-search.aws.element84.com/v0/collections/sentinel-s2-l2a-cogs/items/S2A_10TFK_20220524_0_L2A",
+      "ml-aoi:role": "feature"
+    },
+    {
+      "rel": "derived_from",
+      "href": "label-item.json",
+      "role": "ml-aoi:label"
+    }
+  ],
+  "assets": {
+    "label": {
+      "href": "labels-v1.geojson",
+      "type": "application/geo+json",
+      "description": "label",
+      "ml-aoi:role": "label",
+      "roles": [
+        "label"
+      ]
+    }
+  },
+  "bbox": [
+    -121.8343226741975,
+    39.63588071728383,
+    -120.51956282559038,
+    40.64479052153662
+  ],
+  "stac_extensions": [
+    "https://stac-extensions.github.io/ml-aoi/v0.1.0/schema.json"
+  ]
+}
