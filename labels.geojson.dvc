@@ -1,0 +1,4 @@
+outs:
+- md5: 4af1a31af3ab6fe478670ce0b03ed642
+  size: 5310
+  path: labels.geojson
