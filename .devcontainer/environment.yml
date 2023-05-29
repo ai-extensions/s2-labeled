@@ -5,3 +5,6 @@ dependencies:
   - ipykernel
   - pystac
   - python=3.10
+  - pip:
+    - gdal
+    - scikit-learn
