@@ -5,6 +5,9 @@ dependencies:
   - ipykernel
   - pystac
   - python=3.10
+  - gdal
   - pip:
-    - gdal
     - scikit-learn
+    - pystac-client
+    - shapely
+    - black[jupyter]
