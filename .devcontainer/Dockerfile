@@ -1,8 +1,10 @@
-FROM mambaorg/micromamba
+FROM mambaorg/micromamba:focal
 
 USER root
 
-ENV USERNAME=mambauser
+ENV USERNAME=mambauser \
+    DEBIAN_FRONTEND=noninteractive
+
 
 ENV PATH=/opt/conda/envs/env_label/bin:$PATH
 
@@ -16,7 +18,6 @@ RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
 RUN chown -R mambauser:1000 /opt/conda/
-
 
 RUN \
     echo "**** install Stars ****" && \

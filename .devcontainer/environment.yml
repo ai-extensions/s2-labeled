@@ -11,3 +11,5 @@ dependencies:
     - pystac-client
     - shapely
     - black[jupyter]
+    - loguru
+    - boto3
