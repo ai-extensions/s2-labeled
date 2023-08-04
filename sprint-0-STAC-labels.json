@@ -1,0 +1,31 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -3.68,
+                    40.41
+                ]
+            },
+            "properties": {
+                "class": "WATER"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -3.68,
+                    40.41
+                ]
+            },
+            "properties": {
+                "class": "NOT_WATER"
+            }
+        }
+    ]
+}
