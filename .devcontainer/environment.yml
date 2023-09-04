@@ -5,7 +5,6 @@ dependencies:
   - ipykernel
   - pystac
   - python=3.10
-  - gdal
   - pip:
     - scikit-learn
     - pystac-client
@@ -13,3 +12,10 @@ dependencies:
     - black[jupyter]
     - loguru
     - boto3
+    - rasterio
+    - pandas
+    - geopandas
+    - boto3
+    - botocore
+    - seaborn
+    - jinja2

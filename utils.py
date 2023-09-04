@@ -1,19 +1,42 @@
-from osgeo import gdal, ogr, osr
 import os
 import sys
+import pyproj
 
 # don't remove this import, it's needed for the botocore session
 import boto3  # noqa: F401
 import botocore
 from urllib.parse import urljoin, urlparse
-from pystac import Collection, read_file
+from pystac import Collection, read_file, Asset
 from loguru import logger
 import requests
-
-gdal.UseExceptions()
 from pystac.stac_io import DefaultStacIO, StacIO
 import subprocess
 from botocore.exceptions import ClientError
+import numpy as np
+from pystac.extensions.eo import EOExtension
+import pandas as pd
+
+
+def convert_coordinates(src_crs, target_crs, x, y):
+    """
+    Convert coordinates from the source CRS to the target CRS.
+
+    Parameters:
+        src_crs (str): The EPSG code or Proj string of the source CRS.
+        target_crs (str): The EPSG code or Proj string of the target CRS.
+        x (float): The X-coordinate of the point.
+        y (float): The Y-coordinate of the point.
+
+    Returns:
+        tuple: A tuple containing the transformed X and Y coordinates in the target CRS.
+    """
+    # Create a transformer from source CRS to target CRS
+    transformer = pyproj.Transformer.from_crs(src_crs, target_crs, always_xy=True)
+
+    # Convert the coordinates to the target CRS
+    transformed_x, transformed_y = transformer.transform(x, y)
+
+    return transformed_x, transformed_y
 
 
 class StarsCopyWrapper:
@@ -138,7 +161,39 @@ def pixel_to_coords(source, x, y):
 
     long, lat, _ = ct.TransformPoint(px, py)
 
-    return lat, long
+    return round(lat, 5), round(long, 5)
+
+
+def coords_to_image(source, lon, lat):
+    """Converts latitude and longitude to image coordinates (row, column)"""
+
+    # Create spatial references for EPSG:4326 and the image's projection
+    srs_4326 = osr.SpatialReference()
+    srs_4326.ImportFromEPSG(4326)
+
+    image_srs = osr.SpatialReference()
+    image_srs.ImportFromWkt(source.GetProjection())
+
+    image_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+    srs_4326.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+
+    # Create a coordinate transformation between EPSG:4326 and the image's projection
+    ct = osr.CoordinateTransformation(srs_4326, image_srs)
+
+    # Transform latitude and longitude to image coordinates
+    lon, lat, _ = ct.TransformPoint(lon, lat)
+
+    geo_transform = source.GetGeoTransform()
+    x_min = geo_transform[0]
+    x_size = geo_transform[1]
+    y_min = geo_transform[3]
+    y_size = geo_transform[5]
+
+    # Calculate row and column coordinates in the image
+    x = int((lon - x_min) / x_size)
+    y = int((lat - y_min) / y_size)
+
+    return x, y
 
 
 def to_geojson(t, x, y):
@@ -305,7 +360,7 @@ class CustomStacIO(DefaultStacIO):
         parsed = urlparse(source)
         if parsed.scheme == "s3":
             # read the user settings file from the environment variable
-            s3_settings = UserSettings('usersettings.json')
+            s3_settings = UserSettings("usersettings.json")
             s3_settings.set_s3_environment(source)
 
             s3_client = self.session.create_client(
@@ -341,3 +396,51 @@ StacIO.set_default(CustomStacIO)
 def read_url(source):
     """Reads a STAC object from a URL or file path."""
     return read_file(source)
+
+
+def process_row(row, common_bands, dataset):
+    "EPSG:4326"
+    longitude = row.geometry.x
+    latitude = row.geometry.y
+
+    for common_band in common_bands:
+        crs_info = dataset[common_band].crs
+        target_crs = f"EPSG:{crs_info.to_epsg()}"
+        src_crs = "EPSG:4326"
+
+        utm_x, utm_y = convert_coordinates(src_crs, target_crs, longitude, latitude)
+        band_values = dataset[common_band].sample([(utm_x, utm_y)], 1)
+        row[common_band] = [val for val in band_values][0][0] / 10000
+
+    row["ndvi"] = (row["nir"] - row["red"]) / (row["nir"] + row["red"])
+
+    row["ndwi1"] = (row["green"] - row["nir"]) / (row["green"] + row["nir"])
+
+    row["ndwi2"] = (row["nir"] - row["swir16"]) / (row["nir"] + row["swir16"])
+
+    return pd.Series(row)
+
+
+def get_asset_by_common_name(item, common_name: str) -> Asset:
+    """
+    Finds an asset in item that contains a band with the specified common name.
+
+    Parameters:
+        item (object): The item or dataset containing assets to search.
+        common_name (str): The common name of the band to look for.
+
+    Returns:
+        Asset: The asset that contains a band with the specified common name, or None if not found.
+
+    Example:
+        item = ... # an object representing a dataset or item
+        asset_with_red_band = get_asset_by_common_name(item, "red")
+    """
+    for _, asset in item.get_assets().items():
+        eo_ext = EOExtension.ext(asset)
+        try:
+            if eo_ext.bands[0].common_name in [common_name]:
+                return asset
+
+        except TypeError:
+            pass
