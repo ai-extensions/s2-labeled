@@ -11,3 +11,12 @@ The labels are used for the AI-Extensions validation using three popular algorit
 * Support Vector Machine (SVM): a set of supervised learning methods used for classification, regression and outliers detection
 
 The example makes use of the algorithms provided by the scikit-learn library.
+
+## Installation
+
+Create the Python environment with:
+
+
+```
+mamba env create -f .devcontainer/environment.yml 
+```

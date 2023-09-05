@@ -5,6 +5,7 @@ dependencies:
   - ipykernel
   - pystac
   - python=3.10
+  - pip
   - pip:
     - scikit-learn
     - pystac-client
@@ -19,3 +20,4 @@ dependencies:
     - botocore
     - seaborn
     - jinja2
+    - geojson
