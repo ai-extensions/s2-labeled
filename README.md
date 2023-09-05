@@ -10,7 +10,7 @@ The labels are used for the AI-Extensions validation using three popular algorit
 * Random Forest: an ensemble classification method, where several predictions of base estimators are combined
 * Support Vector Machine (SVM): a set of supervised learning methods used for classification, regression and outliers detection
 
-The example makes use of the algorithms provided by the scikit-learn library.
+The example makes use of the algorithms provided by the scikit-learn library
 
 ## Installation
 

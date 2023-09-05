@@ -237,13 +237,17 @@ def to_geojson(t, x, y):
     out_datasource = None
 
 
-def post_or_put(url: str, data: dict):
+def post_or_put(url: str, data: dict, headers=None):
     """Post or put data to url."""
-    request = requests.post(url, json=data, timeout=20)
+
+    if headers is None:
+        headers = {}
+
+    request = requests.post(url, json=data, timeout=20, headers=headers)
     if request.status_code == 409:
         new_url = url if data["type"] == "Collection" else url + f"/{data['id']}"
         # Exists, so update
-        request = requests.put(new_url, json=data, timeout=20)
+        request = requests.put(new_url, json=data, timeout=20, headers=headers)
         # Unchanged may throw a 404
         if not request.status_code == 404:
             request.raise_for_status()
@@ -256,13 +260,14 @@ def post_or_put(url: str, data: dict):
 def ingest_collection(
     app_host: str,
     collection: Collection,
+    headers=None
 ):
     """ingest collection."""
 
-    post_or_put(urljoin(app_host, "/collections"), collection.to_dict())
+    post_or_put(urljoin(app_host, "/collections"), collection.to_dict(), headers)
 
 
-def ingest_items(app_host: str, items, collection: None):
+def ingest_items(app_host: str, items, collection: None, headers=None):
     """ingest items."""
 
     for item in items:
@@ -292,7 +297,7 @@ def ingest_items(app_host: str, items, collection: None):
             f"Post item {item.id} to {app_host}/collections/{collection_id}/items"
         )
         request = post_or_put(
-            urljoin(app_host, f"/collections/{collection_id}/items"), item.to_dict()
+            urljoin(app_host, f"/collections/{collection_id}/items"), item.to_dict(), headers=headers
         )
 
         print(
@@ -444,3 +449,19 @@ def get_asset_by_common_name(item, common_name: str) -> Asset:
 
         except TypeError:
             pass
+
+
+def get_token(url, **kwargs):
+
+    data = {**kwargs}
+
+    response = requests.post(url, data=data)
+
+    if response.status_code == 200:
+        json_data = response.json()
+        access_token = json_data.get("access_token")
+        return access_token
+    else:
+        logger.error(
+            f"Request for a token failed with status code {response.status_code}"
+        )
