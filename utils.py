@@ -1,3 +1,4 @@
+
 import os
 import sys
 import pyproj
@@ -19,8 +20,8 @@ import pandas as pd
 
 def convert_coordinates(src_crs, target_crs, x, y):
     """
-    Convert coordinates from the source CRS to the target CRS.
-
+    Convert coordinates from
+    
     Parameters:
         src_crs (str): The EPSG code or Proj string of the source CRS.
         target_crs (str): The EPSG code or Proj string of the target CRS.
@@ -365,7 +366,7 @@ class CustomStacIO(DefaultStacIO):
         parsed = urlparse(source)
         if parsed.scheme == "s3":
             # read the user settings file from the environment variable
-            s3_settings = UserSettings("usersettings.json")
+            s3_settings = UserSettings("/etc/Stars/appsettings.json")
             s3_settings.set_s3_environment(source)
 
             s3_client = self.session.create_client(
